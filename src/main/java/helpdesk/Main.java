@@ -39,7 +39,9 @@ public class Main {
 
         repository.add(ticket);
         repository.add(new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM));
-        repository.add(new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW));
+        Ticket printerTicket = new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW);
+        repository.add(printerTicket);
+        ticketService.cancelTicket(printerTicket);
 
         System.out.println();
         System.out.println("Все заявки:");

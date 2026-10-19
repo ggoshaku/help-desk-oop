@@ -23,4 +23,9 @@ public class TicketService {
         ticket.close();
         notificationService.send("Заявка №" + ticket.getId() + " закрыта");
     }
+
+    public void cancelTicket(Ticket ticket) {
+        ticket.cancel();
+        notificationService.send("Заявка №" + ticket.getId() + " отменена");
+    }
 }

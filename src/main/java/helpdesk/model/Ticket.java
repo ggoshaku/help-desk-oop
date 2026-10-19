@@ -74,6 +74,14 @@ public class Ticket {
         status = TicketStatus.CLOSED;
     }
 
+    public void cancel() {
+        if (status == TicketStatus.CLOSED || status == TicketStatus.CANCELLED) {
+            System.out.println("Ошибка: нельзя отменить закрытую или уже отменённую заявку");
+            return;
+        }
+        status = TicketStatus.CANCELLED;
+    }
+
     @Override
     public String toString() {
         return "#" + id + " " + title
