@@ -5,6 +5,9 @@ import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
 import helpdesk.model.Ticket;
 import helpdesk.model.User;
+import helpdesk.service.ConsoleNotificationService;
+import helpdesk.service.NotificationService;
+import helpdesk.service.TicketService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +24,14 @@ public class Main {
 
         System.out.println("Заявка #" + ticket.getId() + ": " + ticket.getTitle() + " | " + ticket.getStatus());
 
-        ticket.resolve();
+        NotificationService notificationService = new ConsoleNotificationService();
+        TicketService ticketService = new TicketService(notificationService);
 
-        ticket.startProcessing();
+        ticketService.startTicket(ticket);
         System.out.println("Статус: " + ticket.getStatus());
-        ticket.resolve();
+        ticketService.resolveTicket(ticket);
         System.out.println("Статус: " + ticket.getStatus());
-        ticket.close();
+        ticketService.closeTicket(ticket);
         System.out.println("Статус: " + ticket.getStatus());
 
         List<User> users = new ArrayList<>();
