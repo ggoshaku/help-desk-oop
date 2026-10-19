@@ -32,11 +32,11 @@ public class Main {
         Ticket ticket = new Ticket(1, "Не работает Wi-Fi", "Ноутбук не видит сеть в аудитории 305", TicketPriority.HIGH);
         printTicket(ticket);
 
-        ticketService.startTicket(ticket);
+        ticketService.startTicket(ticket, agent);
         printStatus(ticket);
-        ticketService.resolveTicket(ticket);
+        ticketService.resolveTicket(ticket, agent);
         printStatus(ticket);
-        ticketService.closeTicket(ticket);
+        ticketService.closeTicket(ticket, agent);
         printStatus(ticket);
 
         repository.add(ticket);
@@ -44,7 +44,7 @@ public class Main {
         repository.add(appTicket);
         Ticket printerTicket = new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW);
         repository.add(printerTicket);
-        ticketService.cancelTicket(printerTicket);
+        ticketService.cancelTicket(printerTicket, customer);
 
         System.out.println();
         System.out.println("Все заявки:");
@@ -60,7 +60,7 @@ public class Main {
 
         System.out.println();
         try {
-            ticketService.closeTicket(appTicket);
+            ticketService.closeTicket(appTicket, agent);
         } catch (InvalidTicketStateException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
@@ -69,6 +69,10 @@ public class Main {
         } catch (IllegalArgumentException e) {
             System.out.println("Заявка не создана: " + e.getMessage());
         }
+
+        System.out.println();
+        System.out.println("Заявки специалиста " + agent.getName() + ":");
+        printTickets(agent.getAssignedTickets());
 
         System.out.println();
         System.out.println("Пользователи:");
