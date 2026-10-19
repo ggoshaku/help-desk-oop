@@ -4,6 +4,7 @@ import helpdesk.model.Administrator;
 import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
 import helpdesk.model.Ticket;
+import helpdesk.model.TicketPriority;
 import helpdesk.model.User;
 import helpdesk.repository.TicketRepository;
 import helpdesk.service.ConsoleNotificationService;
@@ -26,7 +27,7 @@ public class Main {
 
         System.out.println("Клиент: " + customer.getName());
 
-        Ticket ticket = new Ticket(1, "Не работает Wi-Fi", "Ноутбук не видит сеть в аудитории 305");
+        Ticket ticket = new Ticket(1, "Не работает Wi-Fi", "Ноутбук не видит сеть в аудитории 305", TicketPriority.HIGH);
         printTicket(ticket);
 
         ticketService.startTicket(ticket);
@@ -37,8 +38,8 @@ public class Main {
         printStatus(ticket);
 
         repository.add(ticket);
-        repository.add(new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта"));
-        repository.add(new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\""));
+        repository.add(new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM));
+        repository.add(new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW));
 
         System.out.println();
         System.out.println("Все заявки:");
@@ -61,7 +62,7 @@ public class Main {
 
     private static void printTickets(List<Ticket> tickets) {
         for (Ticket ticket : tickets) {
-            System.out.println("#" + ticket.getId() + " " + ticket.getTitle() + " | " + ticket.getStatus());
+            System.out.println("#" + ticket.getId() + " " + ticket.getTitle() + " | " + ticket.getPriority() + " | " + ticket.getStatus());
         }
     }
 }

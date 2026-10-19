@@ -4,12 +4,14 @@ public class Ticket {
     private long id;
     private String title;
     private String description;
+    private TicketPriority priority;
     private TicketStatus status;
 
-    public Ticket(long id, String title, String description) {
+    public Ticket(long id, String title, String description, TicketPriority priority) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.priority = priority;
         this.status = TicketStatus.NEW;
     }
 
@@ -23,6 +25,10 @@ public class Ticket {
 
     public String getDescription() {
         return description;
+    }
+
+    public TicketPriority getPriority() {
+        return priority;
     }
 
     public TicketStatus getStatus() {
