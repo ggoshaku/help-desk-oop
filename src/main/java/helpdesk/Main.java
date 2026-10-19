@@ -46,6 +46,13 @@ public class Main {
         printTickets(repository.findAll());
 
         System.out.println();
+        try {
+            new Ticket(4, "   ", "Без названия", TicketPriority.LOW);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Заявка не создана: " + e.getMessage());
+        }
+
+        System.out.println();
         System.out.println("Пользователи:");
         for (User user : List.of(customer, agent, admin)) {
             user.performAction();
@@ -62,7 +69,7 @@ public class Main {
 
     private static void printTickets(List<Ticket> tickets) {
         for (Ticket ticket : tickets) {
-            System.out.println("#" + ticket.getId() + " " + ticket.getTitle() + " | " + ticket.getPriority() + " | " + ticket.getStatus());
+            System.out.println(ticket);
         }
     }
 }

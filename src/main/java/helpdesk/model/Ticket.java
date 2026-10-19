@@ -1,17 +1,28 @@
 package helpdesk.model;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+
 public class Ticket {
-    private long id;
-    private String title;
-    private String description;
-    private TicketPriority priority;
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+    private final long id;
+    private final String title;
+    private final String description;
+    private final TicketPriority priority;
+    private final LocalDateTime createdAt;
     private TicketStatus status;
 
     public Ticket(long id, String title, String description, TicketPriority priority) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Название заявки не может быть пустым");
+        }
         this.id = id;
-        this.title = title;
+        this.title = title.strip();
         this.description = description;
-        this.priority = priority;
+        this.priority = Objects.requireNonNull(priority, "priority");
+        this.createdAt = LocalDateTime.now();
         this.status = TicketStatus.NEW;
     }
 
@@ -29,6 +40,10 @@ public class Ticket {
 
     public TicketPriority getPriority() {
         return priority;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public TicketStatus getStatus() {
@@ -57,5 +72,13 @@ public class Ticket {
             return;
         }
         status = TicketStatus.CLOSED;
+    }
+
+    @Override
+    public String toString() {
+        return "#" + id + " " + title
+                + " | " + status
+                + " | " + priority
+                + " | создана " + createdAt.format(DATE_FORMAT);
     }
 }
