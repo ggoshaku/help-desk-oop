@@ -5,6 +5,7 @@ import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
 import helpdesk.model.Ticket;
 import helpdesk.model.TicketPriority;
+import helpdesk.model.TicketStatus;
 import helpdesk.model.User;
 import helpdesk.repository.TicketRepository;
 import helpdesk.service.ConsoleNotificationService;
@@ -46,6 +47,14 @@ public class Main {
         System.out.println();
         System.out.println("Все заявки:");
         printTickets(repository.findAll());
+
+        System.out.println();
+        System.out.println("Новые заявки:");
+        printTickets(repository.findByStatus(TicketStatus.NEW));
+        System.out.println("Заявки с приоритетом HIGH:");
+        printTickets(repository.findByPriority(TicketPriority.HIGH));
+        System.out.println("Поиск #2: " + repository.findById(2).map(Ticket::getTitle).orElse("не найдена"));
+        System.out.println("Поиск #42: " + repository.findById(42).map(Ticket::getTitle).orElse("не найдена"));
 
         System.out.println();
         try {
