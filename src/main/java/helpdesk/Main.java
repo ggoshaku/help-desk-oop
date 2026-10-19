@@ -11,6 +11,7 @@ import helpdesk.model.TicketStatus;
 import helpdesk.model.User;
 import helpdesk.repository.InMemoryTicketRepository;
 import helpdesk.repository.TicketRepository;
+import helpdesk.service.AuditService;
 import helpdesk.service.ConsoleNotificationService;
 import helpdesk.service.EmailNotificationService;
 import helpdesk.service.NotificationService;
@@ -30,7 +31,8 @@ public class Main {
 
         TicketRepository repository = new InMemoryTicketRepository();
         NotificationService notificationService = new ConsoleNotificationService();
-        TicketService ticketService = new TicketService(repository, notificationService);
+        AuditService auditService = new AuditService();
+        TicketService ticketService = new TicketService(repository, notificationService, auditService);
 
         runLifecycle(customer, agent, ticketService);
 
@@ -45,7 +47,7 @@ public class Main {
         printTickets(repository.findAll());
 
         showSearch(repository);
-        showNotificationChannels(customer, agent, repository, appTicket);
+        showNotificationChannels(customer, agent, repository, auditService, appTicket);
         showErrors(customer, agent, ticketService, printerTicket);
 
         printSection("История заявки #1");
@@ -60,6 +62,9 @@ public class Main {
 
         printSection("Заявки специалиста " + agent.getName());
         printTickets(agent.getAssignedTickets());
+
+        printSection("Журнал действий");
+        auditService.getRecords().forEach(System.out::println);
 
         printSection("Пользователи");
         for (User user : List.of(customer, agent, admin)) {
@@ -93,12 +98,13 @@ public class Main {
     }
 
     private static void showNotificationChannels(Customer customer, SupportAgent agent,
-                                                 TicketRepository repository, Ticket ticket) {
+                                                 TicketRepository repository, AuditService auditService,
+                                                 Ticket ticket) {
         printSection("Другие способы уведомлений");
         TicketService emailTicketService =
-                new TicketService(repository, new EmailNotificationService(customer.getEmail()));
+                new TicketService(repository, new EmailNotificationService(customer.getEmail()), auditService);
         TicketService telegramTicketService =
-                new TicketService(repository, new TelegramNotificationService("@helpdesk_support"));
+                new TicketService(repository, new TelegramNotificationService("@helpdesk_support"), auditService);
 
         emailTicketService.startTicket(ticket, agent);
         telegramTicketService.resolveTicket(ticket, agent);

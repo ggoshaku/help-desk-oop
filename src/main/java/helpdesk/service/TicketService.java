@@ -16,14 +16,19 @@ import java.util.Map;
 public class TicketService {
     private final TicketRepository repository;
     private final NotificationService notificationService;
+    private final AuditService auditService;
 
-    public TicketService(TicketRepository repository, NotificationService notificationService) {
+    public TicketService(TicketRepository repository,
+                         NotificationService notificationService,
+                         AuditService auditService) {
         this.repository = repository;
         this.notificationService = notificationService;
+        this.auditService = auditService;
     }
 
     public void registerTicket(Ticket ticket, Customer customer) {
         repository.add(ticket);
+        auditService.record(customer, "создал(а) заявку #" + ticket.getId());
         notificationService.send("Заявка №" + ticket.getId() + " от клиента " + customer.getName() + " зарегистрирована");
     }
 
@@ -34,21 +39,25 @@ public class TicketService {
 
     public void startTicket(Ticket ticket, SupportAgent agent) {
         agent.assignTicket(ticket);
+        auditService.record(agent, "взял(а) в работу заявку #" + ticket.getId());
         notificationService.send("Заявка №" + ticket.getId() + " принята в работу");
     }
 
     public void resolveTicket(Ticket ticket, SupportAgent agent) {
         ticket.resolve();
+        auditService.record(agent, "решил(а) заявку #" + ticket.getId());
         notificationService.send("По заявке №" + ticket.getId() + " найдено решение");
     }
 
     public void closeTicket(Ticket ticket, SupportAgent agent) {
         ticket.close();
+        auditService.record(agent, "закрыл(а) заявку #" + ticket.getId());
         notificationService.send("Заявка №" + ticket.getId() + " закрыта");
     }
 
     public void cancelTicket(Ticket ticket, User initiator) {
         ticket.cancel();
+        auditService.record(initiator, "отменил(а) заявку #" + ticket.getId());
         notificationService.send("Заявка №" + ticket.getId() + " отменена пользователем " + initiator.getName());
     }
 
