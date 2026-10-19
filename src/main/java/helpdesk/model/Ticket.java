@@ -4,13 +4,13 @@ public class Ticket {
     private long id;
     private String title;
     private String description;
-    private String status;
+    private TicketStatus status;
 
     public Ticket(long id, String title, String description) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.status = "NEW";
+        this.status = TicketStatus.NEW;
     }
 
     public long getId() {
@@ -25,31 +25,31 @@ public class Ticket {
         return description;
     }
 
-    public String getStatus() {
+    public TicketStatus getStatus() {
         return status;
     }
 
     public void startProcessing() {
-        if (!status.equals("NEW")) {
+        if (status != TicketStatus.NEW) {
             System.out.println("Ошибка: в работу можно взять только новую заявку");
             return;
         }
-        status = "IN_PROGRESS";
+        status = TicketStatus.IN_PROGRESS;
     }
 
     public void resolve() {
-        if (!status.equals("IN_PROGRESS")) {
+        if (status != TicketStatus.IN_PROGRESS) {
             System.out.println("Ошибка: решить можно только заявку в работе");
             return;
         }
-        status = "RESOLVED";
+        status = TicketStatus.RESOLVED;
     }
 
     public void close() {
-        if (!status.equals("RESOLVED")) {
+        if (status != TicketStatus.RESOLVED) {
             System.out.println("Ошибка: закрыть можно только решённую заявку");
             return;
         }
-        status = "CLOSED";
+        status = TicketStatus.CLOSED;
     }
 }
