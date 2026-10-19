@@ -8,6 +8,7 @@ import helpdesk.model.Ticket;
 import helpdesk.model.TicketPriority;
 import helpdesk.model.TicketStatus;
 import helpdesk.model.User;
+import helpdesk.repository.InMemoryTicketRepository;
 import helpdesk.repository.TicketRepository;
 import helpdesk.service.ConsoleNotificationService;
 import helpdesk.service.EmailNotificationService;
@@ -25,24 +26,24 @@ public class Main {
         SupportAgent agent = new SupportAgent(2, "Сергей Иванов", "sergey@helpdesk.ru");
         Administrator admin = new Administrator(3, "Олег Смирнов", "admin@helpdesk.ru");
 
+        TicketRepository repository = new InMemoryTicketRepository();
         NotificationService notificationService = new ConsoleNotificationService();
-        TicketService ticketService = new TicketService(notificationService);
-        TicketRepository repository = new TicketRepository();
+        TicketService ticketService = new TicketService(repository, notificationService);
 
-        runLifecycle(customer, agent, ticketService, repository);
+        runLifecycle(customer, agent, ticketService);
 
         Ticket appTicket = new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM);
         Ticket printerTicket = new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW);
         Ticket vpnTicket = new Ticket(4, "Нет доступа к VPN", "Не подключается удалённый рабочий стол", TicketPriority.CRITICAL);
-        repository.add(appTicket);
-        repository.add(printerTicket);
-        repository.add(vpnTicket);
+        for (Ticket ticket : List.of(appTicket, printerTicket, vpnTicket)) {
+            ticketService.registerTicket(ticket, customer);
+        }
 
         printSection("Все заявки");
         printTickets(repository.findAll());
 
         showSearch(repository);
-        showNotificationChannels(customer, agent, appTicket);
+        showNotificationChannels(customer, agent, repository, appTicket);
         showErrors(customer, agent, ticketService, printerTicket);
 
         printSection("Заявки специалиста " + agent.getName());
@@ -54,21 +55,19 @@ public class Main {
         }
     }
 
-    private static void runLifecycle(Customer customer, SupportAgent agent,
-                                     TicketService ticketService, TicketRepository repository) {
+    private static void runLifecycle(Customer customer, SupportAgent agent, TicketService ticketService) {
         System.out.println("Клиент: " + customer.getName());
 
         Ticket ticket = new Ticket(1, "Не работает Wi-Fi", "Ноутбук не видит сеть в аудитории 305", TicketPriority.HIGH);
         System.out.println("Заявка #" + ticket.getId() + ": " + ticket.getTitle() + " | " + ticket.getStatus());
 
+        ticketService.registerTicket(ticket, customer);
         ticketService.startTicket(ticket, agent);
         printStatus(ticket);
         ticketService.resolveTicket(ticket, agent);
         printStatus(ticket);
         ticketService.closeTicket(ticket, agent);
         printStatus(ticket);
-
-        repository.add(ticket);
     }
 
     private static void showSearch(TicketRepository repository) {
@@ -81,10 +80,13 @@ public class Main {
         System.out.println("Заявка #42: " + repository.findById(42).map(Ticket::getTitle).orElse("не найдена"));
     }
 
-    private static void showNotificationChannels(Customer customer, SupportAgent agent, Ticket ticket) {
+    private static void showNotificationChannels(Customer customer, SupportAgent agent,
+                                                 TicketRepository repository, Ticket ticket) {
         printSection("Другие способы уведомлений");
-        TicketService emailTicketService = new TicketService(new EmailNotificationService(customer.getEmail()));
-        TicketService telegramTicketService = new TicketService(new TelegramNotificationService("@helpdesk_support"));
+        TicketService emailTicketService =
+                new TicketService(repository, new EmailNotificationService(customer.getEmail()));
+        TicketService telegramTicketService =
+                new TicketService(repository, new TelegramNotificationService("@helpdesk_support"));
 
         emailTicketService.startTicket(ticket, agent);
         telegramTicketService.resolveTicket(ticket, agent);
