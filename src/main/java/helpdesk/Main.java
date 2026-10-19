@@ -10,7 +10,9 @@ import helpdesk.model.TicketStatus;
 import helpdesk.model.User;
 import helpdesk.repository.TicketRepository;
 import helpdesk.service.ConsoleNotificationService;
+import helpdesk.service.EmailNotificationService;
 import helpdesk.service.NotificationService;
+import helpdesk.service.TelegramNotificationService;
 import helpdesk.service.TicketService;
 
 import java.util.List;
@@ -27,10 +29,37 @@ public class Main {
         TicketService ticketService = new TicketService(notificationService);
         TicketRepository repository = new TicketRepository();
 
+        runLifecycle(customer, agent, ticketService, repository);
+
+        Ticket appTicket = new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM);
+        Ticket printerTicket = new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW);
+        Ticket vpnTicket = new Ticket(4, "Нет доступа к VPN", "Не подключается удалённый рабочий стол", TicketPriority.CRITICAL);
+        repository.add(appTicket);
+        repository.add(printerTicket);
+        repository.add(vpnTicket);
+
+        printSection("Все заявки");
+        printTickets(repository.findAll());
+
+        showSearch(repository);
+        showNotificationChannels(customer, agent, appTicket);
+        showErrors(customer, agent, ticketService, printerTicket);
+
+        printSection("Заявки специалиста " + agent.getName());
+        printTickets(agent.getAssignedTickets());
+
+        printSection("Пользователи");
+        for (User user : List.of(customer, agent, admin)) {
+            user.performAction();
+        }
+    }
+
+    private static void runLifecycle(Customer customer, SupportAgent agent,
+                                     TicketService ticketService, TicketRepository repository) {
         System.out.println("Клиент: " + customer.getName());
 
         Ticket ticket = new Ticket(1, "Не работает Wi-Fi", "Ноутбук не видит сеть в аудитории 305", TicketPriority.HIGH);
-        printTicket(ticket);
+        System.out.println("Заявка #" + ticket.getId() + ": " + ticket.getTitle() + " | " + ticket.getStatus());
 
         ticketService.startTicket(ticket, agent);
         printStatus(ticket);
@@ -40,49 +69,46 @@ public class Main {
         printStatus(ticket);
 
         repository.add(ticket);
-        Ticket appTicket = new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM);
-        repository.add(appTicket);
-        Ticket printerTicket = new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW);
-        repository.add(printerTicket);
-        ticketService.cancelTicket(printerTicket, customer);
+    }
 
-        System.out.println();
-        System.out.println("Все заявки:");
-        printTickets(repository.findAll());
-
-        System.out.println();
+    private static void showSearch(TicketRepository repository) {
+        printSection("Поиск");
         System.out.println("Новые заявки:");
         printTickets(repository.findByStatus(TicketStatus.NEW));
-        System.out.println("Заявки с приоритетом HIGH:");
-        printTickets(repository.findByPriority(TicketPriority.HIGH));
-        System.out.println("Поиск #2: " + repository.findById(2).map(Ticket::getTitle).orElse("не найдена"));
-        System.out.println("Поиск #42: " + repository.findById(42).map(Ticket::getTitle).orElse("не найдена"));
+        System.out.println("Заявки с приоритетом CRITICAL:");
+        printTickets(repository.findByPriority(TicketPriority.CRITICAL));
+        System.out.println("Заявка #2: " + repository.findById(2).map(Ticket::getTitle).orElse("не найдена"));
+        System.out.println("Заявка #42: " + repository.findById(42).map(Ticket::getTitle).orElse("не найдена"));
+    }
 
-        System.out.println();
+    private static void showNotificationChannels(Customer customer, SupportAgent agent, Ticket ticket) {
+        printSection("Другие способы уведомлений");
+        TicketService emailTicketService = new TicketService(new EmailNotificationService(customer.getEmail()));
+        TicketService telegramTicketService = new TicketService(new TelegramNotificationService("@helpdesk_support"));
+
+        emailTicketService.startTicket(ticket, agent);
+        telegramTicketService.resolveTicket(ticket, agent);
+    }
+
+    private static void showErrors(Customer customer, SupportAgent agent,
+                                   TicketService ticketService, Ticket ticket) {
+        printSection("Ошибки");
+        ticketService.cancelTicket(ticket, customer);
         try {
-            ticketService.closeTicket(appTicket, agent);
+            ticketService.startTicket(ticket, agent);
         } catch (InvalidTicketStateException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
         try {
-            new Ticket(4, "   ", "Без названия", TicketPriority.LOW);
+            new Ticket(5, "   ", "Без названия", TicketPriority.LOW);
         } catch (IllegalArgumentException e) {
             System.out.println("Заявка не создана: " + e.getMessage());
         }
-
-        System.out.println();
-        System.out.println("Заявки специалиста " + agent.getName() + ":");
-        printTickets(agent.getAssignedTickets());
-
-        System.out.println();
-        System.out.println("Пользователи:");
-        for (User user : List.of(customer, agent, admin)) {
-            user.performAction();
-        }
     }
 
-    private static void printTicket(Ticket ticket) {
-        System.out.println("Заявка #" + ticket.getId() + ": " + ticket.getTitle() + " | " + ticket.getStatus());
+    private static void printSection(String title) {
+        System.out.println();
+        System.out.println("--- " + title + " ---");
     }
 
     private static void printStatus(Ticket ticket) {
@@ -90,6 +116,9 @@ public class Main {
     }
 
     private static void printTickets(List<Ticket> tickets) {
+        if (tickets.isEmpty()) {
+            System.out.println("(нет заявок)");
+        }
         for (Ticket ticket : tickets) {
             System.out.println(ticket);
         }
