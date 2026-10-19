@@ -48,6 +48,9 @@ public class Main {
         showNotificationChannels(customer, agent, repository, appTicket);
         showErrors(customer, agent, ticketService, printerTicket);
 
+        printSection("История заявки #1");
+        ticketService.getTicket(1).getHistory().forEach(System.out::println);
+
         printSection("Статистика");
         ticketService.getStatistics()
                 .forEach((status, count) -> System.out.println(status + ": " + count));
