@@ -16,11 +16,13 @@ public class Ticket {
     private final String title;
     private final String description;
     private final TicketPriority priority;
+    private final TicketCategory category;
     private final LocalDateTime createdAt;
     private final List<StatusChange> history = new ArrayList<>();
     private TicketStatus status;
 
-    public Ticket(long id, String title, String description, TicketPriority priority) {
+    public Ticket(long id, String title, String description,
+                  TicketPriority priority, TicketCategory category) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("Название заявки не может быть пустым");
         }
@@ -28,6 +30,7 @@ public class Ticket {
         this.title = title.strip();
         this.description = description;
         this.priority = Objects.requireNonNull(priority, "priority");
+        this.category = Objects.requireNonNull(category, "category");
         this.createdAt = LocalDateTime.now();
         this.status = TicketStatus.NEW;
     }
@@ -46,6 +49,10 @@ public class Ticket {
 
     public TicketPriority getPriority() {
         return priority;
+    }
+
+    public TicketCategory getCategory() {
+        return category;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -112,6 +119,7 @@ public class Ticket {
         return "#" + id + " " + title
                 + " | " + status
                 + " | " + priority
+                + " | " + category.getTitle()
                 + " | создана " + createdAt.format(DATE_FORMAT)
                 + " | срок до " + getDeadline().format(DATE_FORMAT);
     }

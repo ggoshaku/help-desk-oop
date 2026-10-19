@@ -6,6 +6,7 @@ import helpdesk.model.Administrator;
 import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
 import helpdesk.model.Ticket;
+import helpdesk.model.TicketCategory;
 import helpdesk.model.TicketPriority;
 import helpdesk.model.TicketStatus;
 import helpdesk.model.User;
@@ -36,9 +37,27 @@ public class Main {
 
         runLifecycle(customer, agent, ticketService);
 
-        Ticket appTicket = new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM);
-        Ticket printerTicket = new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW);
-        Ticket vpnTicket = new Ticket(4, "Нет доступа к VPN", "Не подключается удалённый рабочий стол", TicketPriority.CRITICAL);
+        Ticket appTicket = new Ticket(
+                2,
+                "Ошибка приложения",
+                "1С падает при формировании отчёта",
+                TicketPriority.MEDIUM,
+                TicketCategory.SOFTWARE
+        );
+        Ticket printerTicket = new Ticket(
+                3,
+                "Не печатает принтер",
+                "Принтер в бухгалтерии пишет \"замятие бумаги\"",
+                TicketPriority.LOW,
+                TicketCategory.HARDWARE
+        );
+        Ticket vpnTicket = new Ticket(
+                4,
+                "Нет доступа к VPN",
+                "Не подключается удалённый рабочий стол",
+                TicketPriority.CRITICAL,
+                TicketCategory.ACCOUNT
+        );
         for (Ticket ticket : List.of(appTicket, printerTicket, vpnTicket)) {
             ticketService.registerTicket(ticket, customer);
         }
@@ -75,7 +94,13 @@ public class Main {
     private static void runLifecycle(Customer customer, SupportAgent agent, TicketService ticketService) {
         System.out.println("Клиент: " + customer.getName());
 
-        Ticket ticket = new Ticket(1, "Не работает Wi-Fi", "Ноутбук не видит сеть в аудитории 305", TicketPriority.HIGH);
+        Ticket ticket = new Ticket(
+                1,
+                "Не работает Wi-Fi",
+                "Ноутбук не видит сеть в аудитории 305",
+                TicketPriority.HIGH,
+                TicketCategory.NETWORK
+        );
         System.out.println("Заявка #" + ticket.getId() + ": " + ticket.getTitle() + " | " + ticket.getStatus());
 
         ticketService.registerTicket(ticket, customer);
@@ -93,6 +118,8 @@ public class Main {
         printTickets(repository.findByStatus(TicketStatus.NEW));
         System.out.println("Заявки с приоритетом CRITICAL:");
         printTickets(repository.findByPriority(TicketPriority.CRITICAL));
+        System.out.println("Категория \"" + TicketCategory.HARDWARE.getTitle() + "\":");
+        printTickets(repository.findByCategory(TicketCategory.HARDWARE));
         System.out.println("Заявка #2: " + repository.findById(2).map(Ticket::getTitle).orElse("не найдена"));
         System.out.println("Заявка #42: " + repository.findById(42).map(Ticket::getTitle).orElse("не найдена"));
     }
@@ -125,7 +152,7 @@ public class Main {
             System.out.println("Ошибка: " + e.getMessage());
         }
         try {
-            new Ticket(5, "   ", "Без названия", TicketPriority.LOW);
+            new Ticket(5, "   ", "Без названия", TicketPriority.LOW, TicketCategory.HARDWARE);
         } catch (IllegalArgumentException e) {
             System.out.println("Заявка не создана: " + e.getMessage());
         }

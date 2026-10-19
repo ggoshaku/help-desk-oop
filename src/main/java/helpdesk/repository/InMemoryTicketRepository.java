@@ -1,6 +1,7 @@
 package helpdesk.repository;
 
 import helpdesk.model.Ticket;
+import helpdesk.model.TicketCategory;
 import helpdesk.model.TicketPriority;
 import helpdesk.model.TicketStatus;
 
@@ -37,6 +38,11 @@ public class InMemoryTicketRepository implements TicketRepository {
     @Override
     public List<Ticket> findByPriority(TicketPriority priority) {
         return findBy(ticket -> ticket.getPriority() == priority);
+    }
+
+    @Override
+    public List<Ticket> findByCategory(TicketCategory category) {
+        return findBy(ticket -> ticket.getCategory() == category);
     }
 
     private List<Ticket> findBy(Predicate<Ticket> condition) {

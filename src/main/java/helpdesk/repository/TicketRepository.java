@@ -1,6 +1,7 @@
 package helpdesk.repository;
 
 import helpdesk.model.Ticket;
+import helpdesk.model.TicketCategory;
 import helpdesk.model.TicketPriority;
 import helpdesk.model.TicketStatus;
 
@@ -17,4 +18,6 @@ public interface TicketRepository {
     List<Ticket> findByStatus(TicketStatus status);
 
     List<Ticket> findByPriority(TicketPriority priority);
+
+    List<Ticket> findByCategory(TicketCategory category);
 }
