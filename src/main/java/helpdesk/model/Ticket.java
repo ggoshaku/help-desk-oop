@@ -1,5 +1,7 @@
 package helpdesk.model;
 
+import helpdesk.exception.InvalidTicketStateException;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -51,35 +53,37 @@ public class Ticket {
     }
 
     public void startProcessing() {
-        if (status != TicketStatus.NEW) {
-            System.out.println("Ошибка: в работу можно взять только новую заявку");
-            return;
-        }
+        requireStatus(TicketStatus.NEW, "в работу можно взять только новую заявку");
         status = TicketStatus.IN_PROGRESS;
     }
 
     public void resolve() {
-        if (status != TicketStatus.IN_PROGRESS) {
-            System.out.println("Ошибка: решить можно только заявку в работе");
-            return;
-        }
+        requireStatus(TicketStatus.IN_PROGRESS, "решить можно только заявку в работе");
         status = TicketStatus.RESOLVED;
     }
 
     public void close() {
-        if (status != TicketStatus.RESOLVED) {
-            System.out.println("Ошибка: закрыть можно только решённую заявку");
-            return;
-        }
+        requireStatus(TicketStatus.RESOLVED, "закрыть можно только решённую заявку");
         status = TicketStatus.CLOSED;
     }
 
     public void cancel() {
         if (status == TicketStatus.CLOSED || status == TicketStatus.CANCELLED) {
-            System.out.println("Ошибка: нельзя отменить закрытую или уже отменённую заявку");
-            return;
+            throw invalidState("нельзя отменить закрытую или уже отменённую заявку");
         }
         status = TicketStatus.CANCELLED;
+    }
+
+    private void requireStatus(TicketStatus expected, String message) {
+        if (status != expected) {
+            throw invalidState(message);
+        }
+    }
+
+    private InvalidTicketStateException invalidState(String message) {
+        return new InvalidTicketStateException(
+                "Заявка №" + id + ": " + message + " (текущий статус " + status + ")"
+        );
     }
 
     @Override

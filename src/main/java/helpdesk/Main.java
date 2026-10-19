@@ -1,5 +1,6 @@
 package helpdesk;
 
+import helpdesk.exception.InvalidTicketStateException;
 import helpdesk.model.Administrator;
 import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
@@ -39,7 +40,8 @@ public class Main {
         printStatus(ticket);
 
         repository.add(ticket);
-        repository.add(new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM));
+        Ticket appTicket = new Ticket(2, "Ошибка приложения", "1С падает при формировании отчёта", TicketPriority.MEDIUM);
+        repository.add(appTicket);
         Ticket printerTicket = new Ticket(3, "Не печатает принтер", "Принтер в бухгалтерии пишет \"замятие бумаги\"", TicketPriority.LOW);
         repository.add(printerTicket);
         ticketService.cancelTicket(printerTicket);
@@ -57,6 +59,11 @@ public class Main {
         System.out.println("Поиск #42: " + repository.findById(42).map(Ticket::getTitle).orElse("не найдена"));
 
         System.out.println();
+        try {
+            ticketService.closeTicket(appTicket);
+        } catch (InvalidTicketStateException e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        }
         try {
             new Ticket(4, "   ", "Без названия", TicketPriority.LOW);
         } catch (IllegalArgumentException e) {
