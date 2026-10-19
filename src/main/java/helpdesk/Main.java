@@ -46,6 +46,10 @@ public class Main {
         showNotificationChannels(customer, agent, repository, appTicket);
         showErrors(customer, agent, ticketService, printerTicket);
 
+        printSection("Статистика");
+        ticketService.getStatistics()
+                .forEach((status, count) -> System.out.println(status + ": " + count));
+
         printSection("Заявки специалиста " + agent.getName());
         printTickets(agent.getAssignedTickets());
 

@@ -3,8 +3,12 @@ package helpdesk.service;
 import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
 import helpdesk.model.Ticket;
+import helpdesk.model.TicketStatus;
 import helpdesk.model.User;
 import helpdesk.repository.TicketRepository;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public class TicketService {
     private final TicketRepository repository;
@@ -38,5 +42,16 @@ public class TicketService {
     public void cancelTicket(Ticket ticket, User initiator) {
         ticket.cancel();
         notificationService.send("Заявка №" + ticket.getId() + " отменена пользователем " + initiator.getName());
+    }
+
+    public Map<TicketStatus, Long> getStatistics() {
+        Map<TicketStatus, Long> statistics = new EnumMap<>(TicketStatus.class);
+        for (TicketStatus status : TicketStatus.values()) {
+            statistics.put(status, 0L);
+        }
+        for (Ticket ticket : repository.findAll()) {
+            statistics.merge(ticket.getStatus(), 1L, Long::sum);
+        }
+        return statistics;
     }
 }
