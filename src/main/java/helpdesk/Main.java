@@ -1,6 +1,7 @@
 package helpdesk;
 
 import helpdesk.exception.InvalidTicketStateException;
+import helpdesk.exception.TicketNotFoundException;
 import helpdesk.model.Administrator;
 import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
@@ -103,6 +104,11 @@ public class Main {
         try {
             ticketService.startTicket(ticket, agent);
         } catch (InvalidTicketStateException e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        }
+        try {
+            ticketService.getTicket(42);
+        } catch (TicketNotFoundException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
         try {

@@ -1,5 +1,6 @@
 package helpdesk.service;
 
+import helpdesk.exception.TicketNotFoundException;
 import helpdesk.model.Customer;
 import helpdesk.model.SupportAgent;
 import helpdesk.model.Ticket;
@@ -22,6 +23,11 @@ public class TicketService {
     public void registerTicket(Ticket ticket, Customer customer) {
         repository.add(ticket);
         notificationService.send("Заявка №" + ticket.getId() + " от клиента " + customer.getName() + " зарегистрирована");
+    }
+
+    public Ticket getTicket(long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new TicketNotFoundException(id));
     }
 
     public void startTicket(Ticket ticket, SupportAgent agent) {
