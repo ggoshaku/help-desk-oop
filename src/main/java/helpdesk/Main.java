@@ -17,6 +17,7 @@ import helpdesk.service.NotificationService;
 import helpdesk.service.TelegramNotificationService;
 import helpdesk.service.TicketService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Main {
@@ -50,6 +51,9 @@ public class Main {
         printSection("Статистика");
         ticketService.getStatistics()
                 .forEach((status, count) -> System.out.println(status + ": " + count));
+
+        printSection("Просроченные заявки через 3 часа");
+        printTickets(ticketService.findOverdue(LocalDateTime.now().plusHours(3)));
 
         printSection("Заявки специалиста " + agent.getName());
         printTickets(agent.getAssignedTickets());

@@ -52,6 +52,14 @@ public class Ticket {
         return status;
     }
 
+    public LocalDateTime getDeadline() {
+        return createdAt.plus(priority.getSla());
+    }
+
+    public boolean isOverdue(LocalDateTime moment) {
+        return status.isActive() && moment.isAfter(getDeadline());
+    }
+
     public void startProcessing() {
         requireStatus(TicketStatus.NEW, "в работу можно взять только новую заявку");
         status = TicketStatus.IN_PROGRESS;
@@ -91,6 +99,7 @@ public class Ticket {
         return "#" + id + " " + title
                 + " | " + status
                 + " | " + priority
-                + " | создана " + createdAt.format(DATE_FORMAT);
+                + " | создана " + createdAt.format(DATE_FORMAT)
+                + " | срок до " + getDeadline().format(DATE_FORMAT);
     }
 }

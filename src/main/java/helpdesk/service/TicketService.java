@@ -8,7 +8,9 @@ import helpdesk.model.TicketStatus;
 import helpdesk.model.User;
 import helpdesk.repository.TicketRepository;
 
+import java.time.LocalDateTime;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 public class TicketService {
@@ -59,5 +61,11 @@ public class TicketService {
             statistics.merge(ticket.getStatus(), 1L, Long::sum);
         }
         return statistics;
+    }
+
+    public List<Ticket> findOverdue(LocalDateTime moment) {
+        return repository.findAll().stream()
+                .filter(ticket -> ticket.isOverdue(moment))
+                .toList();
     }
 }
